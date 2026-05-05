@@ -73,7 +73,7 @@ export const generateTimeSlots = (): TimeSlot[] => {
   for (let hour = startHour; hour < endHour; hour += 2) {
     slots.push({
       time: `${hour.toString().padStart(2, '0')}:00`,
-      available: Math.random() > 0.3
+      available: true // Todos horários começam disponíveis, a verificação real é feita no banco de dados
     })
   }
   
