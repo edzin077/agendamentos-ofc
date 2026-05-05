@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Loader2, CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
-import { createBooking, checkTimeSlotAvailability, sendWhatsAppNotification, generateBookingMessage } from "@/lib/supabase"
+import { createBooking, checkTimeSlotAvailability, sendBookingNotifications } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
 import { UnitSelection } from "./unit-selection"
 import { ProfessionalSelection } from "./professional-selection"
@@ -109,8 +109,8 @@ export function BookingWizard() {
           status: 'confirmed'
         })
         
-        // Enviar notificação via WhatsApp
-        const message = generateBookingMessage({
+        // Enviar notificações via WhatsApp (dono e cliente)
+        sendBookingNotifications({
           customer_name: booking.customerName,
           customer_phone: booking.customerPhone,
           service_name: booking.service.name,
@@ -120,7 +120,6 @@ export function BookingWizard() {
           date: dateStr,
           time: booking.time
         })
-        sendWhatsAppNotification(message)
         
         setIsComplete(true)
       } catch (err) {
@@ -198,6 +197,7 @@ export function BookingWizard() {
             <ProfessionalSelection
               key="professional"
               selectedProfessional={booking.professional}
+              selectedUnit={booking.unit}
               onSelect={handleProfessionalSelect}
             />
           )}
@@ -206,6 +206,7 @@ export function BookingWizard() {
             <ServiceSelection
               key="service"
               selectedService={booking.service}
+              selectedProfessional={booking.professional}
               onSelect={handleServiceSelect}
             />
           )}

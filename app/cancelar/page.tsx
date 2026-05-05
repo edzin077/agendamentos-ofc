@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, Calendar, Clock, User, Scissors, Phone, X, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react"
-import { getBookingsByPhone, cancelBooking, BookingRecord, sendWhatsAppNotification, generateCancellationMessage } from "@/lib/supabase"
+import { getBookingsByPhone, cancelBooking, BookingRecord, sendCancellationNotifications } from "@/lib/supabase"
 import Link from "next/link"
 
 export default function CancelarPage() {
@@ -60,8 +60,8 @@ export default function CancelarPage() {
     try {
       await cancelBooking(booking.id)
       
-      // Enviar notificação via WhatsApp
-      const message = generateCancellationMessage({
+      // Enviar notificações via WhatsApp (dono e cliente)
+      sendCancellationNotifications({
         customer_name: booking.customer_name,
         customer_phone: booking.customer_phone,
         service_name: booking.service_name,
@@ -70,7 +70,6 @@ export default function CancelarPage() {
         date: booking.date,
         time: booking.time
       })
-      sendWhatsAppNotification(message)
       
       setBookings(bookings.filter(b => b.id !== booking.id))
       setSuccessMessage(`Agendamento de ${formatDate(booking.date)} às ${booking.time} cancelado com sucesso!`)

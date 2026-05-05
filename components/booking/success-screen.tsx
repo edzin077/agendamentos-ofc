@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Check, Calendar, MapPin, User, Clock, Sparkles } from "lucide-react"
+import { Check, Calendar, MapPin, User, Clock, Sparkles, Phone } from "lucide-react"
 import { BookingState } from "@/lib/booking-types"
 
 interface SuccessScreenProps {
@@ -108,10 +108,26 @@ export function SuccessScreen({ booking, onNewBooking }: SuccessScreenProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <Phone className="w-5 h-5 text-primary shrink-0" />
+          <div>
+            <p className="text-xs text-muted-foreground">Telefone</p>
+            <p className="text-foreground font-medium">{booking.customerPhone}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
           <MapPin className="w-5 h-5 text-primary shrink-0" />
           <div>
             <p className="text-xs text-muted-foreground">Unidade</p>
             <p className="text-foreground font-medium">{booking.unit?.name}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <User className="w-5 h-5 text-primary shrink-0" />
+          <div>
+            <p className="text-xs text-muted-foreground">Profissional</p>
+            <p className="text-foreground font-medium">{booking.professional?.name}</p>
           </div>
         </div>
 

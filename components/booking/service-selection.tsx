@@ -3,15 +3,20 @@
 import { motion } from "framer-motion"
 import { Clock } from "lucide-react"
 import Image from "next/image"
-import { Service, SERVICES } from "@/lib/booking-types"
+import { Service, SERVICES, Professional } from "@/lib/booking-types"
 import { cn } from "@/lib/utils"
 
 interface ServiceSelectionProps {
   selectedService: Service | null
+  selectedProfessional: Professional | null
   onSelect: (service: Service) => void
 }
 
-export function ServiceSelection({ selectedService, onSelect }: ServiceSelectionProps) {
+export function ServiceSelection({ selectedService, selectedProfessional, onSelect }: ServiceSelectionProps) {
+  // Filtra serviços que o profissional selecionado oferece
+  const availableServices = SERVICES.filter(
+    service => selectedProfessional && selectedProfessional.allowedServices.includes(service.id)
+  )
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -46,7 +51,7 @@ export function ServiceSelection({ selectedService, onSelect }: ServiceSelection
       </div>
 
       <div className="space-y-3 max-h-[calc(100vh-320px)] overflow-y-auto hide-scrollbar pb-4">
-        {SERVICES.map((service, index) => (
+        {availableServices.map((service, index) => (
           <motion.button
             key={service.id}
             initial={{ opacity: 0, y: 20 }}
