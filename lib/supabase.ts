@@ -129,18 +129,16 @@ export async function getBookedTimeSlots(
 
 // Cancel a booking by ID
 export async function cancelBooking(id: string) {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('bookings')
     .update({ 
       status: 'cancelled', 
       updated_at: new Date().toISOString() 
     })
     .eq('id', id)
-    .select()
-    .single()
 
   if (error) throw error
-  return data
+  return true
 }
 
 // Get a booking by ID

@@ -93,7 +93,7 @@ export default function CancelarPage() {
           <Link href="/" className="p-2 -ml-2 rounded-full hover:bg-muted/50 transition-colors">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </Link>
-          <h1 className="text-lg font-semibold text-foreground">Cancelar Agendamento</h1>
+          <h1 className="text-lg font-semibold text-foreground">Meus Agendamentos</h1>
           <div className="w-10" />
         </div>
       </header>

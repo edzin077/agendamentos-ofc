@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, X } from "lucide-react"
+import { ArrowLeft, Loader2, CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
 import { createBooking, checkTimeSlotAvailability } from "@/lib/supabase"
@@ -159,10 +159,11 @@ export function BookingWizard() {
           
           <Link
             href="/cancelar"
-            className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:bg-secondary transition-all"
-            title="Cancelar agendamento"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs text-muted-foreground hover:bg-secondary transition-all"
+            title="Meus Agendamentos"
           >
-            <X className="w-5 h-5" />
+            <CalendarDays className="w-4 h-4" />
+            <span className="hidden sm:inline">Meus Agendamentos</span>
           </Link>
         </div>
         <StepIndicator currentStep={booking.step} totalSteps={TOTAL_STEPS} />
