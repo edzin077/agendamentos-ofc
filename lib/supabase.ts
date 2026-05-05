@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 // Número do WhatsApp da Maria Nail Design
 const WHATSAPP_NUMBER = '5577999148481'
@@ -93,7 +93,11 @@ export function generateCancellationMessage(booking: {
 _Mensagem automática do sistema de agendamento_`
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Criar cliente apenas se as variáveis estiverem configuradas
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
+)
 
 // Types for database tables
 export interface BookingRecord {
