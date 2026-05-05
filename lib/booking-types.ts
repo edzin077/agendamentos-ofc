@@ -9,6 +9,8 @@ export interface Professional {
   name: string
   avatar: string
   specialty: string
+  allowedUnits: string[] // IDs das unidades onde este profissional trabalha
+  allowedServices: string[] // IDs dos serviços que este profissional oferece
 }
 
 export interface Service {
@@ -46,13 +48,17 @@ export const PROFESSIONALS: Professional[] = [
     id: "maria", 
     name: "Maria", 
     avatar: "/professionals/maria.jpg",
-    specialty: "Especialista em Alongamento"
+    specialty: "Especialista em Alongamento",
+    allowedUnits: ["cristais", "tres-outeiros", "macaubas"], // Todas as unidades
+    allowedServices: ["alongamento", "banho-gel", "esmaltacao-gel", "manicure-pedicure", "manutencao-alongamento", "manutencao-banho-gel"] // Todos os serviços
   },
   { 
     id: "fabiana", 
     name: "Fabiana", 
     avatar: "/professionals/fabiana.jpg",
-    specialty: "Expert em Nail Art"
+    specialty: "Manicure e Pedicure",
+    allowedUnits: ["cristais"], // Apenas Cristais
+    allowedServices: ["manicure-pedicure"] // Apenas Manicure e Pedicure
   },
 ]
 

@@ -3,15 +3,20 @@
 import { motion } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 import Image from "next/image"
-import { Professional, PROFESSIONALS } from "@/lib/booking-types"
+import { Professional, PROFESSIONALS, Unit } from "@/lib/booking-types"
 import { cn } from "@/lib/utils"
 
 interface ProfessionalSelectionProps {
   selectedProfessional: Professional | null
+  selectedUnit: Unit | null
   onSelect: (professional: Professional) => void
 }
 
-export function ProfessionalSelection({ selectedProfessional, onSelect }: ProfessionalSelectionProps) {
+export function ProfessionalSelection({ selectedProfessional, selectedUnit, onSelect }: ProfessionalSelectionProps) {
+  // Filtra profissionais que trabalham na unidade selecionada
+  const availableProfessionals = PROFESSIONALS.filter(
+    professional => selectedUnit && professional.allowedUnits.includes(selectedUnit.id)
+  )
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
@@ -30,7 +35,7 @@ export function ProfessionalSelection({ selectedProfessional, onSelect }: Profes
       </div>
 
       <div className="grid gap-4">
-        {PROFESSIONALS.map((professional, index) => (
+        {availableProfessionals.map((professional, index) => (
           <motion.button
             key={professional.id}
             initial={{ opacity: 0, y: 20 }}

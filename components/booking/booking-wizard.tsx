@@ -198,6 +198,7 @@ export function BookingWizard() {
             <ProfessionalSelection
               key="professional"
               selectedProfessional={booking.professional}
+              selectedUnit={booking.unit}
               onSelect={handleProfessionalSelect}
             />
           )}
@@ -206,6 +207,7 @@ export function BookingWizard() {
             <ServiceSelection
               key="service"
               selectedService={booking.service}
+              selectedProfessional={booking.professional}
               onSelect={handleServiceSelect}
             />
           )}
