@@ -45,8 +45,8 @@ export function sendWhatsAppToClient(clientPhone: string, message: string) {
   return whatsappUrl
 }
 
-// Função para enviar notificações de agendamento (dono e cliente)
-export function sendBookingNotifications(booking: {
+// Função para gerar URLs de notificações de agendamento (dono e cliente)
+export function getBookingNotificationUrls(booking: {
   customer_name: string
   customer_phone: string
   service_name: string
@@ -55,14 +55,17 @@ export function sendBookingNotifications(booking: {
   unit_name: string
   date: string
   time: string
-}) {
+}): { ownerUrl: string; clientUrl: string } {
   // Mensagem para o dono
   const ownerMessage = generateBookingMessageForOwner(booking)
-  sendWhatsAppToOwner(ownerMessage)
+  const ownerUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(ownerMessage)}`
   
   // Mensagem para o cliente
   const clientMessage = generateBookingMessageForClient(booking)
-  sendWhatsAppToClient(booking.customer_phone, clientMessage)
+  const formattedPhone = formatPhoneForWhatsApp(booking.customer_phone)
+  const clientUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(clientMessage)}`
+  
+  return { ownerUrl, clientUrl }
 }
 
 // Função para enviar notificações de cancelamento (dono e cliente)
