@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
+import { createBooking } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
 import { UnitSelection } from "./unit-selection"
 import { ProfessionalSelection } from "./professional-selection"
@@ -28,6 +29,8 @@ const initialState: BookingState = {
 export function BookingWizard() {
   const [booking, setBooking] = useState<BookingState>(initialState)
   const [isComplete, setIsComplete] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const updateBooking = (updates: Partial<BookingState>) => {
     setBooking((prev) => ({ ...prev, ...updates }))
@@ -69,9 +72,34 @@ export function BookingWizard() {
     setTimeout(nextStep, 300)
   }
 
-  const handleConfirm = () => {
-    if (booking.customerName && booking.customerPhone) {
-      setIsComplete(true)
+  const handleConfirm = async () => {
+    if (booking.customerName && booking.customerPhone && booking.unit && booking.professional && booking.service && booking.date && booking.time) {
+      setIsSubmitting(true)
+      setError(null)
+      
+      try {
+        await createBooking({
+          unit_id: booking.unit.id,
+          unit_name: booking.unit.name,
+          professional_id: booking.professional.id,
+          professional_name: booking.professional.name,
+          service_id: booking.service.id,
+          service_name: booking.service.name,
+          service_price: booking.service.price,
+          service_duration: booking.service.duration,
+          date: booking.date.toISOString().split('T')[0],
+          time: booking.time,
+          customer_name: booking.customerName,
+          customer_phone: booking.customerPhone,
+          status: 'confirmed'
+        })
+        setIsComplete(true)
+      } catch (err) {
+        console.error('Erro ao criar agendamento:', err)
+        setError('Erro ao criar agendamento. Tente novamente.')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -174,16 +202,26 @@ export function BookingWizard() {
           animate={{ opacity: 1, y: 0 }}
           className="sticky bottom-0 p-4 glass border-t border-border/30"
         >
+          {error && (
+            <p className="text-destructive text-sm text-center mb-2">{error}</p>
+          )}
           <button
             onClick={handleConfirm}
-            disabled={!canProceed()}
-            className={`w-full py-4 rounded-full font-semibold text-lg transition-all min-h-[56px] ${
-              canProceed()
+            disabled={!canProceed() || isSubmitting}
+            className={`w-full py-4 rounded-full font-semibold text-lg transition-all min-h-[56px] flex items-center justify-center gap-2 ${
+              canProceed() && !isSubmitting
                 ? "gold-gradient-bg text-background active:scale-[0.98]"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             }`}
           >
-            Confirmar Agendamento
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Confirmando...
+              </>
+            ) : (
+              'Confirmar Agendamento'
+            )}
           </button>
         </motion.footer>
       )}
