@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Loader2, CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
-import { createBooking, checkTimeSlotAvailability } from "@/lib/supabase"
+import { createBooking, checkTimeSlotAvailability, sendWhatsAppNotification, generateBookingMessage } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
 import { UnitSelection } from "./unit-selection"
 import { ProfessionalSelection } from "./professional-selection"
@@ -108,6 +108,20 @@ export function BookingWizard() {
           customer_phone: booking.customerPhone,
           status: 'confirmed'
         })
+        
+        // Enviar notificação via WhatsApp
+        const message = generateBookingMessage({
+          customer_name: booking.customerName,
+          customer_phone: booking.customerPhone,
+          service_name: booking.service.name,
+          service_price: booking.service.price,
+          professional_name: booking.professional.name,
+          unit_name: booking.unit.name,
+          date: dateStr,
+          time: booking.time
+        })
+        sendWhatsAppNotification(message)
+        
         setIsComplete(true)
       } catch (err) {
         console.error('Erro ao criar agendamento:', err)
@@ -153,7 +167,7 @@ export function BookingWizard() {
           </button>
           
           <div className="text-center">
-            <h1 className="text-lg font-semibold gold-gradient">Nail Design</h1>
+            <h1 className="text-lg font-semibold gold-gradient">Maria Nail Design</h1>
             <p className="text-xs text-muted-foreground">Agende seu horário</p>
           </div>
           

@@ -3,6 +3,96 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+// Número do WhatsApp da Maria Nail Design
+const WHATSAPP_NUMBER = '5577999148481'
+
+// Função para enviar mensagem via WhatsApp
+export function sendWhatsAppNotification(message: string) {
+  const encodedMessage = encodeURIComponent(message)
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`
+  
+  // Abre o WhatsApp em uma nova aba
+  if (typeof window !== 'undefined') {
+    window.open(whatsappUrl, '_blank')
+  }
+  
+  return whatsappUrl
+}
+
+// Formatar data para exibição
+function formatDateBR(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00')
+  return date.toLocaleDateString('pt-BR', { 
+    weekday: 'long', 
+    day: '2-digit', 
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+// Formatar preço
+function formatPriceBR(price: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(price)
+}
+
+// Gerar mensagem de novo agendamento
+export function generateBookingMessage(booking: {
+  customer_name: string
+  customer_phone: string
+  service_name: string
+  service_price: number
+  professional_name: string
+  unit_name: string
+  date: string
+  time: string
+}): string {
+  return `*Novo Agendamento - Maria Nail Design*
+
+*Cliente:* ${booking.customer_name}
+*Telefone:* ${booking.customer_phone}
+
+*Serviço:* ${booking.service_name}
+*Valor:* ${formatPriceBR(booking.service_price)}
+
+*Profissional:* ${booking.professional_name}
+*Unidade:* ${booking.unit_name}
+
+*Data:* ${formatDateBR(booking.date)}
+*Horário:* ${booking.time}
+
+---
+_Mensagem automática do sistema de agendamento_`
+}
+
+// Gerar mensagem de cancelamento
+export function generateCancellationMessage(booking: {
+  customer_name: string
+  customer_phone: string
+  service_name: string
+  professional_name: string
+  unit_name: string
+  date: string
+  time: string
+}): string {
+  return `*Agendamento Cancelado - Maria Nail Design*
+
+*Cliente:* ${booking.customer_name}
+*Telefone:* ${booking.customer_phone}
+
+*Serviço:* ${booking.service_name}
+*Profissional:* ${booking.professional_name}
+*Unidade:* ${booking.unit_name}
+
+*Data:* ${formatDateBR(booking.date)}
+*Horário:* ${booking.time}
+
+---
+_Mensagem automática do sistema de agendamento_`
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Types for database tables

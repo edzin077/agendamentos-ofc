@@ -9,8 +9,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Nail Design Studio | Agendamento',
-  description: 'Agende seu horário no melhor estúdio de Nail Design da região. Alongamento, banho em gel, esmaltação e muito mais.',
+  title: 'Maria Nail Design | Agendamento',
+  description: 'Agende seu horário na Maria Nail Design. Alongamento, banho em gel, esmaltação e muito mais.',
   generator: 'v0.app',
   icons: {
     icon: [

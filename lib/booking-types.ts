@@ -36,9 +36,9 @@ export interface BookingState {
 }
 
 export const UNITS: Unit[] = [
-  { id: "cristais", name: "Cristais", address: "Rua das Flores, 123" },
-  { id: "tres-outeiros", name: "Três Outeiros", address: "Av. Principal, 456" },
-  { id: "macaubas", name: "Macaúbas", address: "Praça Central, 789" },
+  { id: "cristais", name: "Cristais", address: "" },
+  { id: "tres-outeiros", name: "Três Outeiros", address: "" },
+  { id: "macaubas", name: "Macaúbas", address: "" },
 ]
 
 export const PROFESSIONALS: Professional[] = [
