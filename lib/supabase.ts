@@ -126,3 +126,63 @@ export async function getBookedTimeSlots(
   if (error) throw error
   return data?.map(booking => booking.time) || []
 }
+
+// Cancel a booking by ID
+export async function cancelBooking(id: string) {
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({ 
+      status: 'cancelled', 
+      updated_at: new Date().toISOString() 
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// Get a booking by ID
+export async function getBookingById(id: string) {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data as BookingRecord
+}
+
+// Search booking by customer phone and date (for cancellation lookup)
+export async function findBookingByPhoneAndDate(
+  customerPhone: string,
+  date: string
+): Promise<BookingRecord[]> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('customer_phone', customerPhone)
+    .eq('date', date)
+    .neq('status', 'cancelled')
+    .order('time', { ascending: true })
+
+  if (error) throw error
+  return data as BookingRecord[]
+}
+
+// Get all bookings by customer phone
+export async function getBookingsByPhone(customerPhone: string): Promise<BookingRecord[]> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('customer_phone', customerPhone)
+    .neq('status', 'cancelled')
+    .gte('date', new Date().toISOString().split('T')[0])
+    .order('date', { ascending: true })
+    .order('time', { ascending: true })
+
+  if (error) throw error
+  return data as BookingRecord[]
+}

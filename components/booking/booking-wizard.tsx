@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, X } from "lucide-react"
+import Link from "next/link"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
 import { createBooking, checkTimeSlotAvailability } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
@@ -156,7 +157,13 @@ export function BookingWizard() {
             <p className="text-xs text-muted-foreground">Agende seu horário</p>
           </div>
           
-          <div className="w-10" />
+          <Link
+            href="/cancelar"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:bg-secondary transition-all"
+            title="Cancelar agendamento"
+          >
+            <X className="w-5 h-5" />
+          </Link>
         </div>
         <StepIndicator currentStep={booking.step} totalSteps={TOTAL_STEPS} />
       </header>
