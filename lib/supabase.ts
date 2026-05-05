@@ -91,3 +91,38 @@ export async function deleteBooking(id: string) {
   if (error) throw error
   return true
 }
+
+// Check if a specific time slot is available for a professional on a given date
+export async function checkTimeSlotAvailability(
+  professionalId: string, 
+  date: string, 
+  time: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('id')
+    .eq('professional_id', professionalId)
+    .eq('date', date)
+    .eq('time', time)
+    .neq('status', 'cancelled')
+    .limit(1)
+
+  if (error) throw error
+  return !data || data.length === 0
+}
+
+// Get all booked time slots for a professional on a given date
+export async function getBookedTimeSlots(
+  professionalId: string, 
+  date: string
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('time')
+    .eq('professional_id', professionalId)
+    .eq('date', date)
+    .neq('status', 'cancelled')
+
+  if (error) throw error
+  return data?.map(booking => booking.time) || []
+}

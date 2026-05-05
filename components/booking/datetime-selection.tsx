@@ -1,14 +1,16 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { generateTimeSlots, TimeSlot } from "@/lib/booking-types"
+import { getBookedTimeSlots } from "@/lib/supabase"
 
 interface DateTimeSelectionProps {
   selectedDate: Date | null
   selectedTime: string | null
+  professionalId: string | null
   onSelectDate: (date: Date) => void
   onSelectTime: (time: string) => void
 }
@@ -16,11 +18,13 @@ interface DateTimeSelectionProps {
 export function DateTimeSelection({ 
   selectedDate, 
   selectedTime, 
+  professionalId,
   onSelectDate, 
   onSelectTime 
 }: DateTimeSelectionProps) {
   const [dates, setDates] = useState<Date[]>([])
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -37,10 +41,35 @@ export function DateTimeSelection({
   }, [])
 
   useEffect(() => {
-    if (selectedDate) {
-      setTimeSlots(generateTimeSlots())
+    async function loadAvailableSlots() {
+      if (!selectedDate || !professionalId) {
+        setTimeSlots(generateTimeSlots())
+        return
+      }
+
+      setIsLoadingSlots(true)
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0]
+        const bookedTimes = await getBookedTimeSlots(professionalId, dateStr)
+        
+        // Generate slots and mark booked ones as unavailable
+        const allSlots = generateTimeSlots()
+        const updatedSlots = allSlots.map(slot => ({
+          ...slot,
+          available: slot.available && !bookedTimes.includes(slot.time)
+        }))
+        
+        setTimeSlots(updatedSlots)
+      } catch (error) {
+        console.error('Erro ao carregar horários:', error)
+        setTimeSlots(generateTimeSlots())
+      } finally {
+        setIsLoadingSlots(false)
+      }
     }
-  }, [selectedDate])
+
+    loadAvailableSlots()
+  }, [selectedDate, professionalId])
 
   const formatDayName = (date: Date) => {
     return date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')
@@ -143,34 +172,41 @@ export function DateTimeSelection({
           <h3 className="text-lg font-medium text-foreground text-center">
             Horários Disponíveis
           </h3>
-          <div className="grid grid-cols-3 gap-3">
-            {timeSlots.map((slot, index) => (
-              <motion.button
-                key={slot.time}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => slot.available && onSelectTime(slot.time)}
-                disabled={!slot.available}
-                className={cn(
-                  "py-4 px-3 glass rounded-xl text-center transition-all duration-300 min-h-[56px]",
-                  slot.available 
-                    ? "hover:border-primary/50 active:scale-95" 
-                    : "opacity-40 cursor-not-allowed",
-                  selectedTime === slot.time && slot.available 
-                    ? "border-primary/70 bg-primary/10" 
-                    : ""
-                )}
-              >
-                <span className={cn(
-                  "font-semibold",
-                  selectedTime === slot.time ? "gold-gradient" : "text-foreground"
-                )}>
-                  {slot.time}
-                </span>
-              </motion.button>
-            ))}
-          </div>
+          
+          {isLoadingSlots ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {timeSlots.map((slot, index) => (
+                <motion.button
+                  key={slot.time}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => slot.available && onSelectTime(slot.time)}
+                  disabled={!slot.available}
+                  className={cn(
+                    "py-4 px-3 glass rounded-xl text-center transition-all duration-300 min-h-[56px]",
+                    slot.available 
+                      ? "hover:border-primary/50 active:scale-95" 
+                      : "opacity-40 cursor-not-allowed line-through",
+                    selectedTime === slot.time && slot.available 
+                      ? "border-primary/70 bg-primary/10" 
+                      : ""
+                  )}
+                >
+                  <span className={cn(
+                    "font-semibold",
+                    selectedTime === slot.time ? "gold-gradient" : "text-foreground"
+                  )}>
+                    {slot.time}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          )}
         </motion.div>
       )}
     </motion.div>

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
-import { createBooking } from "@/lib/supabase"
+import { createBooking, checkTimeSlotAvailability } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
 import { UnitSelection } from "./unit-selection"
 import { ProfessionalSelection } from "./professional-selection"
@@ -78,6 +78,20 @@ export function BookingWizard() {
       setError(null)
       
       try {
+        // Verificar se o horário ainda está disponível antes de criar
+        const dateStr = booking.date.toISOString().split('T')[0]
+        const isAvailable = await checkTimeSlotAvailability(
+          booking.professional.id,
+          dateStr,
+          booking.time
+        )
+        
+        if (!isAvailable) {
+          setError('Este horário já foi reservado. Por favor, escolha outro horário.')
+          setIsSubmitting(false)
+          return
+        }
+        
         await createBooking({
           unit_id: booking.unit.id,
           unit_name: booking.unit.name,
@@ -87,7 +101,7 @@ export function BookingWizard() {
           service_name: booking.service.name,
           service_price: booking.service.price,
           service_duration: booking.service.duration,
-          date: booking.date.toISOString().split('T')[0],
+          date: dateStr,
           time: booking.time,
           customer_name: booking.customerName,
           customer_phone: booking.customerPhone,
@@ -179,6 +193,7 @@ export function BookingWizard() {
               key="datetime"
               selectedDate={booking.date}
               selectedTime={booking.time}
+              professionalId={booking.professional?.id || null}
               onSelectDate={handleDateSelect}
               onSelectTime={handleTimeSelect}
             />
