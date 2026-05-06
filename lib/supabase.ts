@@ -68,6 +68,24 @@ export function getBookingNotificationUrls(booking: {
   return { ownerUrl, clientUrl }
 }
 
+// Função para enviar notificações de novo agendamento (dono e cliente)
+export function sendBookingNotifications(booking: {
+  customer_name: string
+  customer_phone: string
+  service_name: string
+  service_price: number
+  professional_name: string
+  unit_name: string
+  date: string
+  time: string
+}) {
+  const ownerMessage = generateBookingMessageForOwner(booking)
+  sendWhatsAppToOwner(ownerMessage)
+
+  const clientMessage = generateBookingMessageForClient(booking)
+  sendWhatsAppToClient(booking.customer_phone, clientMessage)
+}
+
 // Função para enviar notificações de cancelamento (dono e cliente)
 export function sendCancellationNotifications(booking: {
   customer_name: string
