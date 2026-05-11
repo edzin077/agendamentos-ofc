@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Loader2, CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
-import { createBooking, checkTimeSlotAvailability, sendBookingNotifications } from "@/lib/supabase"
+import { createBooking, checkTimeSlotAvailability, sendBookingNotifications, blockDate, generateBookingMessageForOwner } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
 import { UnitSelection } from "./unit-selection"
 import { ProfessionalSelection } from "./professional-selection"
@@ -109,8 +109,11 @@ export function BookingWizard() {
           status: 'confirmed'
         })
         
-        // Enviar notificações via WhatsApp (dono e cliente)
-        sendBookingNotifications({
+        // Bloquear a data no banco de dados
+        await blockDate(dateStr, `Agendamento de ${booking.customerName}`)
+        
+        // Dados do agendamento para notificações
+        const bookingData = {
           customer_name: booking.customerName,
           customer_phone: booking.customerPhone,
           service_name: booking.service.name,
@@ -119,7 +122,18 @@ export function BookingWizard() {
           unit_name: booking.unit.name,
           date: dateStr,
           time: booking.time
-        })
+        }
+        
+        // Enviar notificação no Telegram para o dono (silenciosamente)
+        const telegramMessage = generateBookingMessageForOwner(bookingData)
+        fetch('/api/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: telegramMessage })
+        }).catch(err => console.error('Erro ao enviar Telegram:', err))
+        
+        // Enviar notificações via WhatsApp (dono e cliente)
+        sendBookingNotifications(bookingData)
         
         setIsComplete(true)
       } catch (err) {
