@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, Calendar, Clock, User, Scissors, Phone, X, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react"
-import { getBookingsByPhone, cancelBooking, BookingRecord, sendCancellationNotifications, hasBookingsOnDate, unblockDate, generateCancellationMessageForOwner } from "@/lib/supabase"
+import { getBookingsByPhone, cancelBooking, BookingRecord, sendCancellationNotifications, generateCancellationMessageForOwner } from "@/lib/supabase"
 import Link from "next/link"
 
 export default function CancelarPage() {
@@ -59,12 +59,6 @@ export default function CancelarPage() {
 
     try {
       await cancelBooking(booking.id)
-      
-      // Verificar se ainda há agendamentos na data para decidir se desbloqueia
-      const stillHasBookings = await hasBookingsOnDate(booking.date)
-      if (!stillHasBookings) {
-        await unblockDate(booking.date)
-      }
       
       // Dados para notificações
       const cancellationData = {

@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { generateTimeSlots, TimeSlot } from "@/lib/booking-types"
-import { getBookedTimeSlots, getBlockedDates } from "@/lib/supabase"
+import { getBookedTimeSlots } from "@/lib/supabase"
 
 interface DateTimeSelectionProps {
   selectedDate: Date | null
@@ -25,47 +25,26 @@ export function DateTimeSelection({
   const [dates, setDates] = useState<Date[]>([])
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [isLoadingSlots, setIsLoadingSlots] = useState(false)
-  const [blockedDates, setBlockedDates] = useState<string[]>([])
-  const [isLoadingDates, setIsLoadingDates] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
   const hasAutoSelected = useRef(false)
 
   useEffect(() => {
-    async function loadDatesAndBlocked() {
-      setIsLoadingDates(true)
-      
-      // Buscar datas bloqueadas do banco
-      const blocked = await getBlockedDates()
-      setBlockedDates(blocked)
-      
-      // Generate next 14 days
-      const generatedDates: Date[] = []
-      const today = new Date()
-      for (let i = 0; i < 14; i++) {
-        const date = new Date(today)
-        date.setDate(today.getDate() + i)
-        generatedDates.push(date)
-      }
-      setDates(generatedDates)
-      setTimeSlots(generateTimeSlots())
-      
-      // Auto-selecionar a primeira data disponível (não bloqueada)
-      if (!hasAutoSelected.current) {
-        const firstAvailable = generatedDates.find(date => {
-          const dateStr = date.toISOString().split('T')[0]
-          return !blocked.includes(dateStr)
-        })
-        
-        if (firstAvailable) {
-          onSelectDate(firstAvailable)
-          hasAutoSelected.current = true
-        }
-      }
-      
-      setIsLoadingDates(false)
+    // Generate next 14 days
+    const generatedDates: Date[] = []
+    const today = new Date()
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      generatedDates.push(date)
     }
+    setDates(generatedDates)
+    setTimeSlots(generateTimeSlots())
     
-    loadDatesAndBlocked()
+    // Auto-selecionar a primeira data disponível
+    if (!hasAutoSelected.current && generatedDates.length > 0) {
+      onSelectDate(generatedDates[0])
+      hasAutoSelected.current = true
+    }
   }, [onSelectDate])
 
   useEffect(() => {
@@ -116,11 +95,6 @@ export function DateTimeSelection({
     return date.toDateString() === today.toDateString()
   }
 
-  const isBlocked = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
-    return blockedDates.includes(dateStr)
-  }
-
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const scrollAmount = direction === 'left' ? -200 : 200
@@ -158,42 +132,33 @@ export function DateTimeSelection({
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto hide-scrollbar px-10 py-2"
         >
-          {dates.map((date, index) => {
-            const dateBlocked = isBlocked(date)
-            return (
-              <motion.button
-                key={date.toISOString()}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => !dateBlocked && onSelectDate(date)}
-                disabled={dateBlocked}
-                className={cn(
-                  "flex flex-col items-center justify-center min-w-[70px] h-[90px] glass rounded-2xl transition-all duration-300",
-                  dateBlocked 
-                    ? "opacity-40 cursor-not-allowed" 
-                    : "hover:border-primary/50 active:scale-95",
-                  selectedDate?.toDateString() === date.toDateString() && !dateBlocked
-                    ? "border-primary/70 bg-primary/10" 
-                    : "",
-                  isToday(date) && !dateBlocked && "ring-1 ring-primary/30"
-                )}
-              >
-                <span className="text-xs text-muted-foreground uppercase">
-                  {formatDayName(date)}
-                </span>
-                <span className={cn(
-                  "text-2xl font-bold",
-                  dateBlocked ? "text-muted-foreground line-through" : "text-foreground"
-                )}>
-                  {formatDayNumber(date)}
-                </span>
-                <span className="text-xs text-muted-foreground capitalize">
-                  {dateBlocked ? "ocupado" : formatMonth(date)}
-                </span>
-              </motion.button>
-            )
-          })}
+          {dates.map((date, index) => (
+            <motion.button
+              key={date.toISOString()}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => onSelectDate(date)}
+              className={cn(
+                "flex flex-col items-center justify-center min-w-[70px] h-[90px] glass rounded-2xl transition-all duration-300",
+                "hover:border-primary/50 active:scale-95",
+                selectedDate?.toDateString() === date.toDateString() 
+                  ? "border-primary/70 bg-primary/10" 
+                  : "",
+                isToday(date) && "ring-1 ring-primary/30"
+              )}
+            >
+              <span className="text-xs text-muted-foreground uppercase">
+                {formatDayName(date)}
+              </span>
+              <span className="text-2xl font-bold text-foreground">
+                {formatDayNumber(date)}
+              </span>
+              <span className="text-xs text-muted-foreground capitalize">
+                {formatMonth(date)}
+              </span>
+            </motion.button>
+          ))}
         </div>
 
         <button

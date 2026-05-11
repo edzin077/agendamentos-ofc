@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Loader2, CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { BookingState, Unit, Professional, Service } from "@/lib/booking-types"
-import { createBooking, checkTimeSlotAvailability, sendBookingNotifications, blockDate, generateBookingMessageForOwner } from "@/lib/supabase"
+import { createBooking, checkTimeSlotAvailability, sendBookingNotifications, generateBookingMessageForOwner } from "@/lib/supabase"
 import { StepIndicator } from "./step-indicator"
 import { UnitSelection } from "./unit-selection"
 import { ProfessionalSelection } from "./professional-selection"
@@ -108,9 +108,6 @@ export function BookingWizard() {
           customer_phone: booking.customerPhone,
           status: 'confirmed'
         })
-        
-        // Bloquear a data no banco de dados
-        await blockDate(dateStr, `Agendamento de ${booking.customerName}`)
         
         // Dados do agendamento para notificações
         const bookingData = {
