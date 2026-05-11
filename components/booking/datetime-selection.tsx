@@ -26,6 +26,7 @@ export function DateTimeSelection({
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [isLoadingSlots, setIsLoadingSlots] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const hasAutoSelected = useRef(false)
 
   useEffect(() => {
     // Generate next 14 days
@@ -38,7 +39,13 @@ export function DateTimeSelection({
     }
     setDates(generatedDates)
     setTimeSlots(generateTimeSlots())
-  }, [])
+    
+    // Auto-selecionar a primeira data disponível
+    if (!hasAutoSelected.current && generatedDates.length > 0) {
+      onSelectDate(generatedDates[0])
+      hasAutoSelected.current = true
+    }
+  }, [onSelectDate])
 
   useEffect(() => {
     async function loadAvailableSlots() {

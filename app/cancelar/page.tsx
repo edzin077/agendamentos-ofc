@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, Calendar, Clock, User, Scissors, Phone, X, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react"
-import { getBookingsByPhone, cancelBooking, BookingRecord, sendCancellationNotifications } from "@/lib/supabase"
+import { getBookingsByPhone, cancelBooking, BookingRecord, sendCancellationNotifications, generateCancellationMessageForOwner } from "@/lib/supabase"
 import Link from "next/link"
 
 export default function CancelarPage() {
@@ -60,8 +60,8 @@ export default function CancelarPage() {
     try {
       await cancelBooking(booking.id)
       
-      // Enviar notificações via WhatsApp (dono e cliente)
-      sendCancellationNotifications({
+      // Dados para notificações
+      const cancellationData = {
         customer_name: booking.customer_name,
         customer_phone: booking.customer_phone,
         service_name: booking.service_name,
@@ -69,7 +69,18 @@ export default function CancelarPage() {
         unit_name: booking.unit_name,
         date: booking.date,
         time: booking.time
-      })
+      }
+      
+      // Enviar notificação no Telegram para o dono (silenciosamente)
+      const telegramMessage = generateCancellationMessageForOwner(cancellationData)
+      fetch('/api/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: telegramMessage })
+      }).catch(err => console.error('Erro ao enviar Telegram:', err))
+      
+      // Enviar notificações via WhatsApp (dono e cliente)
+      sendCancellationNotifications(cancellationData)
       
       setBookings(bookings.filter(b => b.id !== booking.id))
       setSuccessMessage(`Agendamento de ${formatDate(booking.date)} às ${booking.time} cancelado com sucesso!`)
